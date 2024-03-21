@@ -1,6 +1,6 @@
 "use client";
 
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 import { FileIcon } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +24,9 @@ interface FileInputProps {
   fileUrl?: string | string[];
   multiple?: boolean;
   imageFit?: "cover" | "contain";
+  logoUpload?: boolean;
+  extraClasses?: string;
+  handleLogoEdit?: () => void;
 }
 
 interface SelectedFile {
@@ -40,7 +43,11 @@ const FileInput: React.FC<FileInputProps> = ({
   fileUrl,
   multiple = false,
   imageFit = "cover",
+  logoUpload,
+  handleLogoEdit,
+  extraClasses,
 }) => {
+  console.log(handleLogoEdit, "handle LogoEdit");
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
 
   const handleUpload = async (files: File[]) => {
@@ -247,7 +254,7 @@ const FileInput: React.FC<FileInputProps> = ({
             />
           </div>
         ) : (
-          <div className="h-52">
+          <div className={cn("h-52", extraClasses)}>
             {isImage(selectedFiles[0].name) ? (
               <div className="relative mx-auto h-full w-full overflow-hidden rounded-lg">
                 <Image
@@ -258,12 +265,24 @@ const FileInput: React.FC<FileInputProps> = ({
                   quality={100}
                   className={!selectedFiles[0].uploaded ? "opacity-50" : ""}
                 />
+                {/* Edit icon on hover for Logo Image Uploader */}
                 {selectedFiles[0].uploaded ? (
-                  <div
-                    className="absolute right-2 top-2 flex cursor-pointer items-center justify-center rounded-md bg-slate-100 p-1 hover:bg-slate-200 hover:bg-white/90"
-                    onClick={() => handleRemove(0)}>
-                    <XMarkIcon className="h-5 text-slate-700 hover:text-slate-900" />
-                  </div>
+                  <>
+                    {handleLogoEdit ? (
+                      <div
+                        className="absolute right-2 top-2 flex cursor-pointer items-center justify-center rounded-md bg-slate-100 p-1 hover:bg-slate-200 hover:bg-white/90"
+                        onClick={handleLogoEdit}>
+                        <PencilIcon className="h-4 text-slate-700 hover:text-slate-900" />
+                      </div>
+                    ) : null}{" "}
+                    {!logoUpload ? (
+                      <div
+                        className="absolute right-2 top-2 flex cursor-pointer items-center justify-center rounded-md bg-slate-100 p-1 hover:bg-slate-200 hover:bg-white/90"
+                        onClick={() => handleRemove(0)}>
+                        <XMarkIcon className="h-4 text-slate-700 hover:text-slate-900" />
+                      </div>
+                    ) : null}
+                  </>
                 ) : (
                   <Loader />
                 )}
@@ -278,7 +297,7 @@ const FileInput: React.FC<FileInputProps> = ({
                   <div
                     className="absolute right-2 top-2 flex cursor-pointer items-center justify-center rounded-md bg-slate-100 p-1 hover:bg-slate-200 hover:bg-white/90"
                     onClick={() => handleRemove(0)}>
-                    <XMarkIcon className="h-5 text-slate-700 hover:text-slate-900" />
+                    <XMarkIcon className="h-4 text-slate-700 hover:text-slate-900" />
                   </div>
                 ) : (
                   <Loader />
@@ -293,10 +312,11 @@ const FileInput: React.FC<FileInputProps> = ({
           name="selected-file"
           handleDragOver={handleDragOver}
           handleDrop={handleDrop}
-          uploaderClassName="h-52 w-full"
+          uploaderClassName={cn("h-52 w-full", extraClasses)}
           allowedFileExtensions={allowedFileExtensions}
           multiple={multiple}
           handleUpload={handleUpload}
+          logoUpload={logoUpload}
         />
       )}
     </div>
@@ -315,6 +335,7 @@ const Uploader = ({
   multiple,
   handleUpload,
   uploadMore = false,
+  logoUpload,
 }: {
   id: string;
   name: string;
@@ -325,6 +346,7 @@ const Uploader = ({
   multiple: boolean;
   handleUpload: (files: File[]) => void;
   uploadMore?: boolean;
+  logoUpload?: boolean;
 }) => {
   return (
     <label
@@ -336,9 +358,11 @@ const Uploader = ({
       onDragOver={(e) => handleDragOver(e)}
       onDrop={(e) => handleDrop(e)}>
       <div className="flex flex-col items-center justify-center pb-6 pt-5">
-        <ArrowUpTrayIcon className="h-6 text-slate-500" />
+        {logoUpload ? null : <ArrowUpTrayIcon className="h-6 text-slate-500" />}
         <p className={cn("mt-2 text-center text-sm text-slate-500", uploadMore && "text-xs")}>
-          <span className="font-semibold">Click or drag to upload files.</span>
+          <span className="font-semibold">
+            {logoUpload ? "Add logo here" : "Click or drag to upload files."}
+          </span>
         </p>
         <input
           type="file"

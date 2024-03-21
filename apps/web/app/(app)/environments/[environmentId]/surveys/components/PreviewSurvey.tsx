@@ -1,5 +1,6 @@
 "use client";
 
+import FileUploadSurveyLogo from "@/app/(app)/environments/[environmentId]/surveys/[surveyId]/edit/components/FileUploadSurveyLogo";
 import Modal from "@/app/(app)/environments/[environmentId]/surveys/components/Modal";
 import TabOption from "@/app/(app)/environments/[environmentId]/surveys/components/TabOption";
 import { MediaBackground } from "@/app/s/[surveyId]/components/MediaBackground";
@@ -13,6 +14,7 @@ import {
 import { Variants, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
+import { updateProduct } from "@formbricks/lib/product/service";
 import type { TEnvironment } from "@formbricks/types/environment";
 import type { TProduct } from "@formbricks/types/product";
 import { TUploadFileConfig } from "@formbricks/types/storage";
@@ -29,6 +31,7 @@ interface PreviewSurveyProps {
   previewType?: TPreviewType;
   product: TProduct;
   environment: TEnvironment;
+  setLocalProduct: (survey: TProduct) => void;
   onFileUpload: (file: File, config?: TUploadFileConfig) => Promise<string>;
 }
 
@@ -64,6 +67,7 @@ export default function PreviewSurvey({
   setActiveQuestionId,
   activeQuestionId,
   survey,
+  setLocalProduct,
   previewType,
   product,
   environment,
@@ -123,6 +127,17 @@ export default function PreviewSurvey({
   const brandColor = surveyBrandColor || product.brandColor;
   const placement = surveyPlacement || product.placement;
   const highlightBorderColor = surveyHighlightBorderColor || product.highlightBorderColor;
+
+  const updateLocalProduct = (data) => {
+    console.log("File Url: ", data);
+    setLocalProduct({
+      ...product,
+      brand: {
+        ...product.brand,
+        ...data,
+      },
+    });
+  };
 
   useEffect(() => {
     // close modal if there are no questions left
@@ -209,15 +224,16 @@ export default function PreviewSurvey({
                     survey={survey}
                     brandColor={brandColor}
                     activeQuestionId={activeQuestionId || undefined}
-                    isBrandingEnabled={product.inAppSurveyBranding}
+                    isBrandingEnabled={product.linkSurveyBranding}
                     onActiveQuestionChange={setActiveQuestionId}
                     isRedirectDisabled={true}
                     onFileUpload={onFileUpload}
                   />
                 </Modal>
               ) : (
-                <div className="w-full px-3">
-                  <div className="no-scrollbar z-10 w-full max-w-md overflow-y-auto rounded-lg border border-transparent">
+                <div className="px-4">
+                  <div className="no-scrollbar z-10 max-h-[500px] w-full max-w-md overflow-y-auto rounded-lg border border-transparent">
+                    <FileUploadSurveyLogo product={product} onLogoChange={updateLocalProduct} />
                     <SurveyInline
                       survey={survey}
                       brandColor={brandColor}
@@ -241,9 +257,8 @@ export default function PreviewSurvey({
                 <div className="h-3 w-3 rounded-full bg-amber-500"></div>
                 <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
               </div>
-              <div className="ml-4 flex w-full justify-between font-mono text-sm text-slate-400">
-                <p>{previewType === "modal" ? "Your web app" : "Preview"}</p>
-
+              <p className="ml-4 flex w-full justify-between font-mono text-sm text-slate-400">
+                {previewType === "modal" ? "Your web app" : "Preview"}
                 <div className="flex items-center">
                   {isFullScreenPreview ? (
                     <ArrowsPointingInIcon
@@ -266,7 +281,7 @@ export default function PreviewSurvey({
                   )}
                   <ResetProgressButton resetQuestionProgress={resetQuestionProgress} />
                 </div>
-              </div>
+              </p>
             </div>
 
             {previewType === "modal" ? (
@@ -279,7 +294,7 @@ export default function PreviewSurvey({
                   survey={survey}
                   brandColor={brandColor}
                   activeQuestionId={activeQuestionId || undefined}
-                  isBrandingEnabled={product.inAppSurveyBranding}
+                  isBrandingEnabled={product.linkSurveyBranding}
                   onActiveQuestionChange={setActiveQuestionId}
                   isRedirectDisabled={true}
                   onFileUpload={onFileUpload}
@@ -287,17 +302,20 @@ export default function PreviewSurvey({
               </Modal>
             ) : (
               <MediaBackground survey={survey} ContentRef={ContentRef} isEditorView>
-                <div className="z-0 w-full max-w-md rounded-lg p-4">
-                  <SurveyInline
-                    survey={survey}
-                    brandColor={brandColor}
-                    activeQuestionId={activeQuestionId || undefined}
-                    isBrandingEnabled={product.linkSurveyBranding}
-                    onActiveQuestionChange={setActiveQuestionId}
-                    isRedirectDisabled={true}
-                    onFileUpload={onFileUpload}
-                    responseCount={42}
-                  />
+                <div className="auto-rows-1fr grid h-full w-full max-w-md flex-col gap-4 rounded-lg p-4">
+                  <FileUploadSurveyLogo product={product} onLogoChange={updateLocalProduct} />
+                  <div className="relative flex w-full self-start rounded-lg">
+                    <SurveyInline
+                      survey={survey}
+                      brandColor={brandColor}
+                      activeQuestionId={activeQuestionId || undefined}
+                      isBrandingEnabled={product.linkSurveyBranding}
+                      onActiveQuestionChange={setActiveQuestionId}
+                      isRedirectDisabled={true}
+                      onFileUpload={onFileUpload}
+                      responseCount={42}
+                    />
+                  </div>
                 </div>
               </MediaBackground>
             )}
