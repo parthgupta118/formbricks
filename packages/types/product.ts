@@ -10,6 +10,10 @@ export const ZProduct = z.object({
   name: z.string(),
   teamId: z.string(),
   brandColor: ZColor,
+  brand: z.object({
+    logoUrl: z.string(),
+    bgColor: z.string(),
+  }),
   highlightBorderColor: ZColor.nullable(),
   recontactDays: z.number().int(),
   inAppSurveyBranding: z.boolean(),
